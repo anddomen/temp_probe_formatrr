@@ -2,5 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-.OBDataPart21.xlsx
+.gitignore
+OBDataPart21.xlsx
 /Data
+README.html
