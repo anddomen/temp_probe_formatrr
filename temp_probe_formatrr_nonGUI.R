@@ -13,7 +13,7 @@ library(writexl)
   # all upladed data needs to go through this
 import_edit <- function(path, interval){
   # import, chop off the trailing columns that are empty, and remove blank NAs
-  raw.import <- read_xlsx(path)[1:5] |> 
+  raw.import <- read_xlsx(path, sheet = 2)[1:5] |> 
     drop_na() 
     
   # take the name of the first column (user inputted name at time of setup)
@@ -63,6 +63,6 @@ for (i in 1:length(files)) {
   df.master <- full_join(df.master, df.probe_data)
 }
 
-write_csv(df.master, file = "/Users/andreadomen/Desktop/testagain.csv")
+write_csv(df.master, file = "/Users/andreadomen/Desktop/test_all8probes_forloop.csv")
 
 
