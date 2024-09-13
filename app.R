@@ -51,7 +51,7 @@ server <- function(input, output) {
         format(size, units = "auto", standard = "SI")
       })
     )
-  })
+  })jnjkn
   
 
   
