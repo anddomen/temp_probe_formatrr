@@ -4,15 +4,17 @@ library(tidyverse)
 library(readxl)
 library(writexl)
 
+
 # Define UI----
 ui <- page_fillable(
   # Page theme ----
-  theme = bs_theme(bootswatch = "lux"),
+  theme = bs_theme(bootswatch = "pulse"),
 
     # Application title
     titlePanel("Combine temperature probe data"),
     
-    
+    # Organize upload box, interval box, and download box
+  layout_column_wrap(
     # Value box for file upload----
     # only accepts .xlsx files and allows for multiple uploads
     value_box(
@@ -21,8 +23,9 @@ ui <- page_fillable(
         "upload",
         label = h6("Highlight multiple files to upload"),
         multiple = TRUE,
-        accept = ".xlsx"
+        accept = ".xlsx",
       ),
+      showcase = bsicons::bs_icon("filetype-xlsx"),
       tableOutput("files")
     ),
     
@@ -48,16 +51,40 @@ ui <- page_fillable(
       showcase = bsicons::bs_icon("box-arrow-down"),
       min_height = "200px",
       theme = value_box_theme(bg = "#D8E7DE", fg = "#45644A" )
-    ),
-    
+    )
+  ),
+  
+  # organize the two data preview cards
+  # make it so the number of rows card is smaller and the table preview is larger
+  layout_columns(
+    col_widths = c(8, 4),
+  
      # output: data changing table----
       # remove when done testing
+      # or don't, it's kinda nice
     card(
+      card_header("Preview of combined file"),
       tableOutput("contents")
+    ),
+    
+    # Card/value box for displaying the number of rows
+    card(
+      card_header("File Statistics"),
+      # Total number of rows in the collated file
+      # just as a 'gut check' for users
+      value_box(
+        title = "Number of rows",
+        value = textOutput("row_count"),
+        showcase = bsicons::bs_icon("table")
+      ),
+      # Average/min/max for each probe
+      card(
+        card_header("Average temperature"),
+        tableOutput("results_table_stats")
+      ),
+      min_height = "200px"
     )
-    
-    
-    
+  )
 
 )
 
@@ -94,9 +121,26 @@ server <- function(input, output) {
   # Render real time preview of data
   output$contents <- renderTable(
     head(combinedData(), n = 10)
-    
   )
+
   
+  # Display the number of rows of the combined data
+  output$row_count <- renderText({
+    if(is.null(combinedData())) return("No file uploaded")
+    nrow(combinedData())
+  })
+  
+  # display the average, min, and max temp per probe
+  output$results_table_stats <- renderTable({
+    req(combinedData())
+    
+    group_by(combinedData(), Probe_name) |> 
+      summarize('Average (°C)' = mean(Temp_C),
+                'Min temperature (°C)' = min(Temp_C),
+                'Max temperature (°C)' = max(Temp_C))
+  })
+  
+
 
   
   # Download data server side----
