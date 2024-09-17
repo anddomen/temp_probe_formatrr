@@ -63,6 +63,6 @@ for (i in 1:length(files)) {
   df.master <- full_join(df.master, df.probe_data)
 }
 
-write_csv(df.master, file = "/Users/andreadomen/Desktop/test_all8probes_forloop.csv")
+write_csv(df.master, file = "")
 
 

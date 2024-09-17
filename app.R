@@ -58,14 +58,6 @@ ui <- page_fillable(
   # make it so the number of rows card is smaller and the table preview is larger
   layout_columns(
     col_widths = c(8, 4),
-  
-     # output: data changing table----
-      # remove when done testing
-      # or don't, it's kinda nice
-    card(
-      card_header("Preview of combined file"),
-      tableOutput("contents")
-    ),
     
     # Card/value box for displaying the number of rows
     card(
@@ -79,13 +71,12 @@ ui <- page_fillable(
       ),
       # Average/min/max for each probe
       card(
-        card_header("Average temperature"),
+        card_header("Average, minimum, and maximum temperature per probe"),
         tableOutput("results_table_stats")
       ),
       min_height = "200px"
     )
   )
-
 )
 
 # Define server logic----
@@ -116,18 +107,10 @@ server <- function(input, output) {
   })
   
   
-
-  
-  # Render real time preview of data
-  output$contents <- renderTable(
-    head(combinedData(), n = 10)
-  )
-
-  
   # Display the number of rows of the combined data
   output$row_count <- renderText({
-    if(is.null(combinedData())) return("No file uploaded")
-    nrow(combinedData())
+    # if(is.null(combinedData())) return("No file uploaded")
+    format(nrow(combinedData()), big.mark = ",")
   })
   
   # display the average, min, and max temp per probe
@@ -141,8 +124,6 @@ server <- function(input, output) {
   })
   
 
-
-  
   # Download data server side----
   output$downloadData <- downloadHandler(
     filename = function(){
@@ -153,11 +134,6 @@ server <- function(input, output) {
       write_xlsx(combinedData(), file)
     } 
   )
-  
-  
-  
-  
-
 }
 
 # Run the application 
