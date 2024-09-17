@@ -8,7 +8,7 @@ library(writexl)
 # Define UI----
 ui <- page_fillable(
   # Page theme ----
-  theme = bs_theme(bootswatch = "pulse"),
+  theme = bs_theme(bootswatch = "minty"),
 
     # Application title
     titlePanel("Combine temperature probe data"),
@@ -26,7 +26,9 @@ ui <- page_fillable(
         accept = ".xlsx",
       ),
       showcase = bsicons::bs_icon("filetype-xlsx"),
-      tableOutput("files")
+      tableOutput("files"),
+      theme = value_box_theme(bg = "#364754", fg = "#FAE2C6"),
+      min_height = "200px"
     ),
     
     # Value box for timing interval----
@@ -36,26 +38,14 @@ ui <- page_fillable(
         "interval",
         label = h6("Enter in seconds. Must have same interval for all probes used"),
         value = NULL
-      )
-    ),
-    
-    # # Value box for download----
-    value_box(
-      title = "Download your file",
-      value = textInput(
-        "filename",
-        h6("What do you want your file to be called?"),
-        value = "Enter text..."),
-      # Download button ----
-      downloadButton("downloadData", "Download"),
-      showcase = bsicons::bs_icon("box-arrow-down"),
-      min_height = "200px",
-      theme = value_box_theme(bg = "#D8E7DE", fg = "#45644A" )
+      ),
+        showcase = bsicons::bs_icon("clock"),
+      theme = value_box_theme(bg = "#E5BCAF", fg = "#5D6562"),
+      min_height = "200px"
     )
   ),
   
   # organize the two data preview cards
-  # make it so the number of rows card is smaller and the table preview is larger
   layout_columns(
     col_widths = c(8, 4),
     
@@ -67,7 +57,9 @@ ui <- page_fillable(
       value_box(
         title = "Number of rows",
         value = textOutput("row_count"),
-        showcase = bsicons::bs_icon("table")
+        showcase = bsicons::bs_icon("table"),
+        min_height = "200px",
+        theme = value_box_theme(bg = "#96BCA5")
       ),
       # Average/min/max for each probe
       card(
@@ -75,6 +67,22 @@ ui <- page_fillable(
         tableOutput("results_table_stats")
       ),
       min_height = "200px"
+    ),
+    
+    
+    
+    # Value box for download----
+    value_box(
+      title = "Download your file",
+      value = textInput(
+        "filename",
+        h6("What do you want your file to be called?"),
+        value = "Enter text..."),
+      # Download button ----
+      downloadButton("downloadData", "Download"),
+      showcase = bsicons::bs_icon("box-arrow-down"),
+      min_height = "200px",
+      theme = value_box_theme(bg = "#DEDAA8", fg = "#746851"),
     )
   )
 )
@@ -109,7 +117,6 @@ server <- function(input, output) {
   
   # Display the number of rows of the combined data
   output$row_count <- renderText({
-    # if(is.null(combinedData())) return("No file uploaded")
     format(nrow(combinedData()), big.mark = ",")
   })
   
@@ -118,9 +125,12 @@ server <- function(input, output) {
     req(combinedData())
     
     group_by(combinedData(), Probe_name) |> 
-      summarize('Average (°C)' = mean(Temp_C),
-                'Min temperature (°C)' = min(Temp_C),
-                'Max temperature (°C)' = max(Temp_C))
+      summarize(avg = mean(Temp_C),
+                min = min(Temp_C),
+                max = max(Temp_C)) |> 
+      # this is super vain but I don't like that it has an underscore so i'm going to 
+      # temporarily get rid of it
+      rename_with(~c("Probe name", "Average (°C)", "Min temperature (°C)", "Max temperature (°C)"))
   })
   
 
