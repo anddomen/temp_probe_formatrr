@@ -1,3 +1,4 @@
+# Load libraries ----
 library(shiny)
 library(bslib)
 library(tidyverse)
@@ -10,10 +11,10 @@ ui <- page_fillable(
   # Page theme ----
   theme = bs_theme(bootswatch = "minty"),
 
-    # Application title
+    # Application title----
     titlePanel("Combine temperature probe data"),
     
-    # Organize upload box, interval box, and download box
+    # Organize upload box, interval box, and download box ----
   layout_column_wrap(
     # Value box for file upload----
     # only accepts .xlsx files and allows for multiple uploads
@@ -45,11 +46,11 @@ ui <- page_fillable(
     )
   ),
   
-  # organize the two data preview cards
+  # organize the two data preview cards----
   layout_columns(
     col_widths = c(8, 4),
     
-    # Card/value box for displaying the number of rows
+    # Card/value box for displaying the number of rows----
     card(
       card_header("File Statistics"),
       # Total number of rows in the collated file
@@ -61,7 +62,7 @@ ui <- page_fillable(
         min_height = "200px",
         theme = value_box_theme(bg = "#96BCA5")
       ),
-      # Average/min/max for each probe
+      # Average/min/max for each probe----
       card(
         card_header("Average, minimum, and maximum temperature per probe"),
         tableOutput("results_table_stats")
@@ -89,7 +90,7 @@ ui <- page_fillable(
 
 # Define server logic----
 server <- function(input, output) {
-  # Output for showing files uploaded
+  # Output for showing files uploaded----
   output$files <- renderTable({
     req(input$upload)
     data.frame(
@@ -100,6 +101,7 @@ server <- function(input, output) {
     )
   })
   
+  # Data manipulation----
   combinedData <- reactive({
     # require files are uploaded and an interval is present
     req(input$upload)
@@ -107,14 +109,16 @@ server <- function(input, output) {
     
     # make an empty list to store each file's data
     file_list <- lapply(input$upload$datapath, 
-                        function(file) import_edit(file, input$interval))
+                        function(file) 
+                          import_edit(file, input$interval))
     
+    # glue everything together
     combined_df <- bind_rows(file_list)
     
     return(combined_df)
   })
   
-  
+  # File stats box section----
   # Display the number of rows of the combined data
   output$row_count <- renderText({
     format(nrow(combinedData()), big.mark = ",")
