@@ -3,5 +3,5 @@
 .RData
 .Ruserdata
 .gitignore
-/Data
+/rsconnect
 README.html
