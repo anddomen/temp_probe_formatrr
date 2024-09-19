@@ -70,8 +70,6 @@ ui <- page_fillable(
       min_height = "200px"
     ),
     
-    
-    
     # Value box for download----
     value_box(
       title = "Download your file",
