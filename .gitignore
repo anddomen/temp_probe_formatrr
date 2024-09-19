@@ -3,5 +3,8 @@
 .RData
 .Ruserdata
 .gitignore
+<<<<<<< HEAD
 /rsconnect
+=======
+>>>>>>> ec71f52518108380b0a238a0189c7d3c0527543f
 README.html
