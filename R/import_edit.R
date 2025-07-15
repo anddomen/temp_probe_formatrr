@@ -7,8 +7,6 @@ library(writexl)
 # custom function to edit data ----
 # does all the renaming and cleaning
 
-path = "Data/Dorothy Bottom 2.xlsx"
-
 import_edit <- function(path) {
   # Import only necessary columns initially and remove 'Serial Number' column
   raw.import <- read_xlsx(path, sheet = 2) |>
