@@ -100,12 +100,12 @@ server <- function(input, output) {
     file_list <- lapply(input$upload$datapath,
                         function(file)
                           import_edit(file))
-
+    
     # glue everything together and round the time for calculation later
     combined_df_long <- bind_rows(file_list) |>
       mutate(Time_for_calc = floor_date(Time, unit = "minute"),
              min_Time = floor_date(min_Time, unit = "minute"))
-
+    
     # grab the last starting time
     latest_start <- combined_df_long |>
       filter(min_Time == max(min_Time)) |>
@@ -115,21 +115,31 @@ server <- function(input, output) {
     # Calculate minutes and hours based off the last started probe
     combined_df <- combined_df_long |>
       mutate(
-        Time_for_calc = floor_date(Time, unit = "minute"),
-        min_Time      = floor_date(min_Time, unit = "minute"),
-        Minutes       = as.numeric(difftime(Time_for_calc,
-                                      latest_start, units = "mins")),
-        Hours         = Minutes/60) |>
-      select(-min_Time, -Time_for_calc)  # remove extra columns
+        Minutes = as.numeric(difftime(Time_for_calc, latest_start, units = "mins")),
+        Hours = Minutes/60
+      ) |> 
+      # Now calculate seconds based off each probe interval and where minutes = 0
+      group_by(Probe_name) |> 
+      mutate(
+        # Find where Minutes >= 0 starts for each probe
+        first_positive_row = which(Minutes >= 0)[1],
+        
+        # Calculate seconds based on position relative to first positive minute
+        Seconds = case_when(
+          # For rows before Minutes = 0, count backwards
+          is.na(first_positive_row) ~ (row_number() - n() - 1) * interval,
+          row_number() < first_positive_row ~ (row_number() - first_positive_row) * interval,
+          # For rows after Minutes = 0, count forwards from 0
+          TRUE ~ (row_number() - first_positive_row) * interval)) |> 
+      select(-first_positive_row) |>
+      ungroup() |> 
+      select(-min_Time, -Time_for_calc, -interval)  # remove extra columns
 
     return(combined_df)
   })
 
   # File stats box section----
   # Display the number of rows of the combined data
-  # output$row_count <- renderText({
-  #   format(nrow(combinedData()), big.mark = ",")
-  # })
   output$row_count <- renderText({
     if (is.null(input$upload)) {
       "No files uploaded"

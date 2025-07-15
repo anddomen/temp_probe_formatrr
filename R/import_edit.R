@@ -7,6 +7,7 @@ library(writexl)
 # custom function to edit data ----
 # does all the renaming and cleaning
 
+path = "Data/Dorothy Bottom 2.xlsx"
 
 import_edit <- function(path) {
   # Import only necessary columns initially and remove 'Serial Number' column
@@ -39,10 +40,10 @@ import_edit <- function(path) {
       rename_with(~c("Probe_name", "Time", "Temp_C"))
   }
   
-  # Add the starting time in it's own column
-  
+  # Add the starting time in it's own column and calculate the interval
   df.add_min_Time <- df.add_probe |> 
-    mutate(min_Time = min(Time))
+    mutate(min_Time = min(Time),
+           interval = as.numeric(difftime(Time[2], Time[1], units = "secs")))
 
   # Return the processed dataframe
   return(df.add_min_Time)
