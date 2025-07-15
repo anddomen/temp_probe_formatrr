@@ -7,7 +7,8 @@ library(writexl)
 # custom function to edit data ----
 # does all the renaming and cleaning
 
-import_edit <- function(path, interval) {
+
+import_edit <- function(path) {
   # Import only necessary columns initially and remove 'Serial Number' column
   raw.import <- read_xlsx(path, sheet = 2) |>
     select(-`Serial Number`) |>
@@ -37,24 +38,12 @@ import_edit <- function(path, interval) {
     df.add_probe <- df.add_probe |>
       rename_with(~c("Probe_name", "Time", "Temp_C"))
   }
-
-  # Create time columns
-  df.add_time <- df.add_probe |>
-    mutate(Time_sec = seq(0, by = interval, length.out = nrow(df.add_probe)),
-           Time_min = Time_sec / 60) |>
-    relocate(c("Time_sec", "Time_min"), .after = "Time")
+  
+  # Add the starting time in it's own column
+  
+  df.add_min_Time <- df.add_probe |> 
+    mutate(min_Time = min(Time))
 
   # Return the processed dataframe
-  return(df.add_time)
+  return(df.add_min_Time)
 }
-
-
-
-
-
-
-
-
-
-
-
