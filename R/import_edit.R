@@ -8,13 +8,13 @@ library(writexl)
 # does all the renaming and cleaning
 
 import_edit <- function(path) {
-  # Import only necessary columns initially and remove 'Serial Number' column
-  raw.import <- read_xlsx(path, sheet = 2) |>
-    select(-`Serial Number`) |>
-    select(1:5)
+  # Import and remove 'Serial Number' column
+  raw.import <- read_xlsx(path, sheet = "Data") |>
+    select(-any_of("Serial Number"))
+
 
   # Determine if it is a probe with humidity by checking the 4th column
-  is_humidity_probe <- colnames(raw.import)[4] == 'Humidity(%rh)'
+  is_humidity_probe <- "Humidity(%rh)" %in% colnames(raw.import)
 
   # Slice the data based on the type of probe
   raw.import <- if (is_humidity_probe) raw.import[1:5] else raw.import[1:3]
